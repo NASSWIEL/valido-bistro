@@ -108,7 +108,3 @@ The workflow generates a comprehensive order log in markdown format, including:
 ## Contributing
 
 This is a demonstration project showcasing BMAD framework implementation. For modifications or extensions, ensure adherence to the established skill architecture and validation protocols.
-
-## License
-
-This project is provided as-is for educational and demonstration purposes. See individual skill files for any specific licensing information.
