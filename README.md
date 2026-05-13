@@ -261,8 +261,4 @@ This is a reference implementation. Issues and PRs are welcome — especially:
 
 ---
 
-<div align="center">
 
-Built with [Claude Code](https://claude.ai/code) · Powered by the BMAD skill pattern
-
-</div>
