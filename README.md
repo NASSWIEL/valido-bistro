@@ -1,110 +1,268 @@
-# Vlaido Bistro Ordering System
+<div align="center">
 
-A BMAD-inspired human-interactive restaurant ordering workflow built on Claude Code skill architecture. This project demonstrates a complete dining experience at **Vlaido Bistro**, guiding customers through dietary category selection, main course, dessert, drink choices, and final order confirmation.
+# 🍽️ Vlaido Bistro
 
-## Overview
+**A conversational restaurant ordering system built with Claude Code skills**
 
-Vlaido is a minimal, self-contained ordering module that simulates a restaurant experience. It follows BMAD framework principles with step-by-step human interaction, state tracking, input validation, and conditional flow progression. The system uses Claude Code skills to manage the workflow, ensuring a seamless and validated ordering process.
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-Skills-blueviolet?style=flat-square&logo=anthropic)](https://claude.ai/code)
+[![BMAD](https://img.shields.io/badge/Architecture-BMAD-orange?style=flat-square)](https://github.com/bmad-framework)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Active-brightgreen?style=flat-square)]()
 
-The primary objective of this project is to understand how workflows function with Claude Code skills, showcasing the integration of multiple skills in a sequential, state-managed process.
+<br/>
+
+*Demonstrates how to build multi-step, state-managed, human-interactive workflows<br/>using Claude Code's native skill architecture — no external dependencies.*
+
+</div>
+
+---
+
+## What is Vlaido Bistro?
+
+Vlaido Bistro is a fully interactive dining experience that lives inside your Claude Code session. It guides customers through a complete restaurant order — from greeting and dietary preference to dessert and final confirmation — using a chain of **5 interconnected skills** with strict input validation and session-persistent state.
+
+It was built as a practical reference for the **BMAD (modular workflow) pattern** in Claude Code: how to decompose a complex, multi-turn interaction into discrete, resumable steps that hand off state cleanly.
+
+```
+User: "I am ready to order."
+
+🍽️  Welcome to Vlaido Bistro!
+     What's your name?
+
+> Naif
+
+     Great to have you, Naif. Please choose your dietary preference:
+
+     1. 🥩  Beef
+     2. 🐟  Fish
+     3. 🥗  Vegetarian
+     4. 🌱  Vegan
+     5. 👨‍🍳  Chef's Special
+
+> 5
+
+     Excellent choice. Here are tonight's Chef's Special main courses...
+```
+
+---
 
 ## Features
 
-- **Interactive Ordering Workflow**: Step-by-step guidance through the entire ordering process
-- **Dietary Category Selection**: Choose from Beef, Fish, Vegetarian, Vegan, or Chef's Special
-- **Personalized Menus**: Category-specific main courses and desserts
-- **Input Validation**: Strict validation with polite re-prompts for invalid inputs
-- **State Persistence**: Order state tracked across sessions in a markdown log file
-- **Order Confirmation**: Full order review with reference number generation
+| | Feature | Description |
+|---|---|---|
+| 🔗 | **Chained skills** | 5 skills execute in sequence, each triggered by the previous |
+| ⏸️ | **Halt-and-wait** | Every step pauses for validated user input — nothing is assumed |
+| 🔄 | **Session resume** | Mid-order interruptions resume at the correct step on re-invoke |
+| ✅ | **Strict validation** | Case-insensitive, number or name input, with re-prompt on ambiguity |
+| 🌱 | **Diet-aware menus** | Main courses and desserts adapt to the selected dietary category |
+| 📋 | **Order log** | Appends a structured markdown receipt with reference number |
+| 🔢 | **Reference numbers** | Auto-generated `ORD-YYYY-XXXX` for every confirmed order |
+| 📦 | **Zero dependencies** | Pure Markdown + YAML — no packages, no setup, no config |
 
-## Menu Options
-
-### Dietary Categories
-1. 🥩 Beef
-2. 🐟 Fish
-3. 🥗 Vegetarian
-4. 🌱 Vegan
-5. 👨‍🍳 Chef's Special
-
-### Sample Main Courses
-- **Beef**: Grilled Ribeye Steak, Beef Bourguignon, Filet Mignon, etc.
-- **Fish**: Pan-Seared Salmon, Grilled Sea Bass, Seared Tuna Steak, etc.
-- **Vegetarian**: Wild Mushroom Risotto, Eggplant Parmigiana, Stuffed Bell Peppers, etc.
-- **Vegan**: Cauliflower Steak, Thai Green Curry, Beetroot Carpaccio, etc.
-- **Chef's Special**: Duck Confit, Rack of Lamb, Truffle Pasta, etc.
-
-### Desserts
-- Standard: Tiramisu, Crème Brûlée, Chocolate Fondant, Panna Cotta, Tarte Tatin
-- Vegan: Dark Chocolate Mousse, Coconut Panna Cotta, Mango Sorbet Trio, etc.
-
-### Drinks
-- Still Water, Sparkling Water, Fresh Orange Juice, House Red Wine, Mint Tea
-
-## Installation & Setup
-
-This project is designed to run within a Claude Code environment. No external dependencies or configuration files are required.
-
-1. Ensure you have Claude Code set up in your workspace.
-2. The skills are located in the `.claude/skills/` directory.
-3. The system is fully self-contained and ready to use.
-
-## Usage
-
-To start the ordering process, simply express your intent to order in natural language:
-
-- "I am ready to order."
-- "I'd like to order something."
-- "I want to place an order."
-
-The `vlaido-welcome` skill will activate and guide you through:
-1. Greeting and customer name collection
-2. Dietary category selection
-3. Main course selection (based on category)
-4. Dessert selection
-5. Drink selection
-6. Final order confirmation
-
-The system will create and maintain an order log file (`vlaido-order-log.md`) in the project root, tracking your progress and final order.
+---
 
 ## Architecture
 
-The system consists of 5 interconnected skills:
+The system is composed of 5 skills, each owning 2 steps. Skills chain automatically — no routing logic needed in the host session.
 
-- `vlaido-welcome`: Entry point for greeting and category selection
-- `vlaido-main-course`: Presents category-specific main course options
-- `vlaido-dessert`: Offers dessert choices (vegan-aware)
-- `vlaido-drinks`: Provides drink selection
-- `vlaido-confirmation`: Summarizes and confirms the complete order
+```
+vlaido-welcome
+  ├── step-01: greeting + name collection
+  └── step-02: dietary category selection (Beef · Fish · Vegetarian · Vegan · Chef's Special)
+        │
+        ▼
+vlaido-main-course
+  ├── step-01: present 5 category-specific dishes
+  └── step-02: confirm selection
+        │
+        ▼
+vlaido-dessert
+  ├── step-01: present desserts (standard or vegan variant)
+  └── step-02: confirm selection
+        │
+        ▼
+vlaido-drinks
+  ├── step-01: present drink options
+  └── step-02: confirm selection
+        │
+        ▼
+vlaido-confirmation
+  ├── step-01: full order summary
+  └── step-02: confirm → write order log  |  restart → back to welcome
+```
 
-Each skill follows BMAD conventions with YAML frontmatter, workflow delegation, and step-by-step execution protocols.
+**State** flows through `vlaido-order-log.md` (YAML frontmatter). Each completed step appends its output and marks itself done, enabling accurate resume detection on re-invocation.
 
-## State Management
+```
+.claude/skills/
+├── vlaido-welcome/
+│   ├── SKILL.md
+│   ├── workflow.md
+│   └── steps/
+│       ├── step-01-greeting.md
+│       └── step-02-category-selection.md
+├── vlaido-main-course/   (same structure)
+├── vlaido-dessert/       (same structure)
+├── vlaido-drinks/        (same structure)
+└── vlaido-confirmation/  (same structure)
+```
 
-Order state is persisted in the frontmatter of the output file, allowing seamless continuation across sessions. The system tracks:
-- Customer name
-- Selected category
-- Main course and description
-- Dessert and description
-- Drink choice
-- Order reference number
-- Completion status
+---
 
-## Validation Rules
+## Menu
 
-- Strict input matching with case-insensitive validation
-- Polite re-prompting for invalid inputs
-- No silent assumptions or defaults
-- Ambiguity resolution through clarification requests
+<details>
+<summary><b>🥩 Beef</b></summary>
 
-## Output
+| # | Dish |
+|---|------|
+| 1 | Grilled Ribeye Steak |
+| 2 | Beef Bourguignon |
+| 3 | Filet Mignon |
+| 4 | Beef Tagliata |
+| 5 | Braised Short Ribs |
 
-The workflow generates a comprehensive order log in markdown format, including:
-- Welcome section with date and customer details
-- Category selection confirmation
-- Detailed menu item descriptions
-- Final order summary with reference number
-- Timestamped completion
+</details>
+
+<details>
+<summary><b>🐟 Fish</b></summary>
+
+| # | Dish |
+|---|------|
+| 1 | Pan-Seared Salmon |
+| 2 | Grilled Sea Bass |
+| 3 | Seared Tuna Steak |
+| 4 | Lobster Thermidor |
+| 5 | Cod en Papillote |
+
+</details>
+
+<details>
+<summary><b>🥗 Vegetarian</b></summary>
+
+| # | Dish |
+|---|------|
+| 1 | Wild Mushroom Risotto |
+| 2 | Eggplant Parmigiana |
+| 3 | Stuffed Bell Peppers |
+| 4 | Spinach and Ricotta Ravioli |
+| 5 | Vegetable Wellington |
+
+</details>
+
+<details>
+<summary><b>🌱 Vegan</b></summary>
+
+| # | Dish |
+|---|------|
+| 1 | Cauliflower Steak |
+| 2 | Thai Green Curry |
+| 3 | Beetroot Carpaccio |
+| 4 | Stuffed Portobello Mushroom |
+| 5 | Lentil Moussaka |
+
+</details>
+
+<details>
+<summary><b>👨‍🍳 Chef's Special</b></summary>
+
+| # | Dish |
+|---|------|
+| 1 | Duck Confit |
+| 2 | Rack of Lamb |
+| 3 | Truffle Pasta |
+| 4 | Seafood Paella |
+| 5 | Wagyu Burger |
+
+</details>
+
+<details>
+<summary><b>🍮 Desserts</b></summary>
+
+**Standard** — Tiramisu · Crème Brûlée · Chocolate Fondant · Panna Cotta · Tarte Tatin
+
+**Vegan** — Dark Chocolate Mousse · Coconut Panna Cotta · Mango Sorbet Trio · Apple Crumble · Avocado Lime Cheesecake
+
+</details>
+
+<details>
+<summary><b>🥤 Drinks</b></summary>
+
+Still Water · Sparkling Water · Fresh Orange Juice · House Red Wine · Mint Tea
+
+</details>
+
+---
+
+## Getting Started
+
+**Requirements:** [Claude Code](https://claude.ai/code) — nothing else.
+
+Clone or copy this repository into any directory you open with Claude Code. The `.claude/skills/` folder is picked up automatically.
+
+```bash
+git clone https://github.com/YOUR_USERNAME/vlaido-bistro
+cd vlaido-bistro
+claude  # open with Claude Code
+```
+
+Then, in your Claude Code session, say anything that signals ordering intent:
+
+```
+I am ready to order.
+I'd like to place an order.
+Let me order something.
+```
+
+The `vlaido-welcome` skill activates and the experience begins.
+
+---
+
+## How BMAD Skills Work
+
+Each skill follows a three-layer structure:
+
+```
+SKILL.md        → entry point, description, activation trigger
+workflow.md     → goal, role, and step delegation instructions
+steps/
+  step-XX.md   → mandatory rules, execution protocol, task goal, instruction sequence
+```
+
+Skills communicate through a shared state file (`vlaido-order-log.md`) whose YAML frontmatter is read and written at each step. This makes the workflow:
+
+- **Resumable** — re-invoking mid-order picks up exactly where it left off
+- **Auditable** — every transition is written to the log before proceeding
+- **Decoupled** — skills don't import each other; state is the contract
+
+---
+
+## Extending the System
+
+To add a new course or modify the menu, edit the corresponding `step-01-present-options.md` file inside the skill's `steps/` folder. The validation and routing logic in `step-02` handles any list of options automatically.
+
+To add an entirely new step to the flow:
+
+1. Create a new skill folder under `.claude/skills/`
+2. Add `SKILL.md`, `workflow.md`, and your step files
+3. Update the previous skill's final step to hand off to the new one
+4. Add the new state fields to the order log frontmatter schema
+
+---
 
 ## Contributing
 
-This is a demonstration project showcasing BMAD framework implementation. For modifications or extensions, ensure adherence to the established skill architecture and validation protocols.
+This is a reference implementation. Issues and PRs are welcome — especially:
+
+- New dietary categories or menu variants
+- Localization (French, Arabic, etc.)
+- A web-based order log viewer
+- Integration with actual POS or reservation systems
+
+---
+
+<div align="center">
+
+Built with [Claude Code](https://claude.ai/code) · Powered by the BMAD skill pattern
+
+</div>
